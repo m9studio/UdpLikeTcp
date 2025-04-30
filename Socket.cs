@@ -22,7 +22,7 @@ namespace M9Studio.UdpLikeTcp
 
         private readonly Dictionary<EndPoint, FragmentBuffer> receiving = new();
         private readonly Dictionary<EndPoint, Queue<byte[]>> packetQueues = new();
-        private readonly HashSet<(EndPoint, int packetId, ushort fragmentNumber)> receivedAcks = new();
+        private readonly List<(DateTime timestamp, EndPoint from, int packetId, ushort fragmentNumber)> receivedAcks = new();
         private readonly object syncLock = new();
 
         private readonly Dictionary<EndPoint, Queue<OutgoingPacket>> sendQueues = new();
@@ -33,7 +33,7 @@ namespace M9Studio.UdpLikeTcp
         {
             socket = new OriginalSocket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             socket.Bind(new IPEndPoint(IPAddress.Any, 0));
-
+            Task.Run(CleanupRoutine);
             Task.Run(() =>
             {
                 byte[] buffer = new byte[MaxUdpSize];
@@ -56,7 +56,7 @@ namespace M9Studio.UdpLikeTcp
                     {
                         if (isAck)
                         {
-                            receivedAcks.Add((remote, packetId, fragmentNumber));
+                            receivedAcks.Add((DateTime.UtcNow, remote, packetId, fragmentNumber));
                             continue;
                         }
 
@@ -213,10 +213,52 @@ namespace M9Studio.UdpLikeTcp
         {
             lock (syncLock)
             {
-                return receivedAcks.Remove((from, packetId, fragmentNumber));
+                var index = receivedAcks.FindIndex(x =>
+                    x.from.Equals(from) &&
+                    x.packetId == packetId &&
+                    x.fragmentNumber == fragmentNumber);
+
+                if (index != -1)
+                {
+                    receivedAcks.RemoveAt(index);
+                    return true;
+                }
+
+                return false;
             }
         }
+        private async Task CleanupRoutine()
+        {
+            const int cleanupIntervalMs = 5000;
+            const int ackTtlSeconds = 10;
+            const int bufferTtlSeconds = 15;
+
+            while (true)
+            {
+                await Task.Delay(cleanupIntervalMs);
+
+                lock (syncLock)
+                {
+                    // Чистим ACK-и
+                    receivedAcks.RemoveAll(entry =>
+                        (DateTime.UtcNow - entry.timestamp).TotalSeconds > ackTtlSeconds);
+
+                    // Чистим сборки пакетов, которые "зависли"
+                    var toRemove = receiving
+                        .Where(pair => (DateTime.UtcNow - pair.Value.LastUpdated).TotalSeconds > bufferTtlSeconds)
+                        .Select(pair => pair.Key)
+                        .ToList();
+
+                    foreach (var ep in toRemove)
+                    {
+                        receiving.Remove(ep);
+                    }
+                }
+            }
+        }
+
+
     }
 
-   
+
 }
