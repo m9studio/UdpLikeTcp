@@ -25,7 +25,7 @@ namespace M9Studio.UdpLikeTcp
         private readonly HashSet<(EndPoint, int packetId, ushort fragmentNumber)> receivedAcks = new();
         private readonly object syncLock = new();
 
-        private readonly Dictionary<EndPoint, Queue<byte[]>> sendQueues = new();
+        private readonly Dictionary<EndPoint, Queue<OutgoingPacket>> sendQueues = new();
         private readonly HashSet<EndPoint> isSending = new();
         private readonly object sendLock = new();
 
@@ -105,28 +105,35 @@ namespace M9Studio.UdpLikeTcp
             });
         }
 
-        public void SendTo(EndPoint remoteEP, byte[] data)
+        public bool SendTo(EndPoint remoteEP, byte[] data)
         {
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var packet = new OutgoingPacket { Data = data, Completion = tcs };
+
             lock (sendLock)
             {
                 if (!sendQueues.TryGetValue(remoteEP, out var queue))
-                    sendQueues[remoteEP] = queue = new Queue<byte[]>();
+                    sendQueues[remoteEP] = queue = new Queue<OutgoingPacket>();
 
-                queue.Enqueue(data);
+                queue.Enqueue(packet);
 
                 if (!isSending.Contains(remoteEP))
                 {
                     isSending.Add(remoteEP);
-                    Task.Run(() => ProcessSendQueue(remoteEP));
+                    ProcessSendQueue(remoteEP); // теперь просто обычный вызов
                 }
             }
+
+            // Блокирует вызов, пока отправка не завершится
+            return tcs.Task.GetAwaiter().GetResult();
         }
 
         private void ProcessSendQueue(EndPoint remoteEP)
         {
             while (true)
             {
-                byte[] data;
+                OutgoingPacket packet;
+
                 lock (sendLock)
                 {
                     var queue = sendQueues[remoteEP];
@@ -136,14 +143,15 @@ namespace M9Studio.UdpLikeTcp
                         return;
                     }
 
-                    data = queue.Dequeue();
+                    packet = queue.Dequeue();
                 }
 
-                SendReliable(remoteEP, data);
+                bool success = SendReliable(remoteEP, packet.Data);
+                packet.Completion.TrySetResult(success);
             }
         }
 
-        private void SendReliable(EndPoint remoteEP, byte[] data)
+        private bool SendReliable(EndPoint remoteEP, byte[] data)
         {
             int packetId = Interlocked.Increment(ref packetCounter);
             int totalSize = data.Length;
@@ -155,7 +163,6 @@ namespace M9Studio.UdpLikeTcp
                 int chunkSize = Math.Min(MaxFragmentSize, totalSize - offset);
 
                 byte[] packet = new byte[HeaderSize + chunkSize];
-
                 BitConverter.GetBytes(packetId).CopyTo(packet, 0);
                 BitConverter.GetBytes(totalSize).CopyTo(packet, 4);
                 BitConverter.GetBytes(fragmentNumber).CopyTo(packet, 8);
@@ -179,10 +186,12 @@ namespace M9Studio.UdpLikeTcp
                     }
                 }
 
-                return; // отказ
+                return false; //Не получил ACK
 
             NextFragment:;
             }
+
+            return true;
         }
 
         public bool ReceiveFrom(EndPoint remoteEP, out byte[] data)
