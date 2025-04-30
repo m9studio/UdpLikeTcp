@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.34928.147
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpLikeTcp", "UdpLikeTcp.csproj", "{4047E29D-1F17-4CBF-9763-C9D1E94C1C41}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4047E29D-1F17-4CBF-9763-C9D1E94C1C41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4047E29D-1F17-4CBF-9763-C9D1E94C1C41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4047E29D-1F17-4CBF-9763-C9D1E94C1C41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4047E29D-1F17-4CBF-9763-C9D1E94C1C41}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E1BB16F7-A5BE-458B-9E5A-4C49E5470B99}
+	EndGlobalSection
+EndGlobal
