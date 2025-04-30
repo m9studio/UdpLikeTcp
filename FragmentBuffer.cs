@@ -6,27 +6,27 @@ using System.Threading.Tasks;
 
 namespace M9Studio.UdpLikeTcp
 {
+    //Буфер для сборки фрагментов
     internal class FragmentBuffer
     {
         public int PacketId;
         public int TotalSize;
         public Dictionary<ushort, byte[]> Fragments = new();
-        public int ReceivedBytes => Fragments.Values.Sum(x => x.Length);
-        public bool IsComplete => ReceivedBytes >= TotalSize;
-
         public DateTime LastUpdated = DateTime.UtcNow;
-        public int RetryCount = 0;
         public byte[] LastAckHeader = Array.Empty<byte>();
+
+        public bool IsComplete => Fragments.Values.Sum(x => x.Length) >= TotalSize;
 
         public byte[] Assemble()
         {
-            var result = new byte[TotalSize];
+            byte[] result = new byte[TotalSize];
             int offset = 0;
-            foreach (var part in Fragments.OrderBy(kvp => kvp.Key))
+            foreach (var pair in Fragments.OrderBy(x => x.Key))
             {
-                Array.Copy(part.Value, 0, result, offset, part.Value.Length);
-                offset += part.Value.Length;
+                Array.Copy(pair.Value, 0, result, offset, pair.Value.Length);
+                offset += pair.Value.Length;
             }
+
             return result;
         }
     }
