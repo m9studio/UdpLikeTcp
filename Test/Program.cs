@@ -10,19 +10,22 @@ namespace M9Studio.UdpLikeTcp.Test
             Socket socket2 = new Socket();
             IPEndPoint ip1 = new IPEndPoint(IPAddress.Loopback, socket1.Port);
             IPEndPoint ip2 = new IPEndPoint(IPAddress.Loopback, socket2.Port);
-            byte[] data = GenerateRandomBytes();
-            if(socket2.SendTo(ip1, data))
+            for(int i = 0; i < 5; i++)
             {
-                byte[] buffer;
-                while(!socket1.ReceiveFrom(ip1, out buffer))
+                byte[] data = GenerateRandomBytes(1200000);
+                if (socket2.SendTo(ip1, data))
                 {
-                    Console.Write(0);
+                    byte[] buffer;
+                    while (!socket1.ReceiveFrom(ip2, out buffer))
+                    {
+                        Console.Write(0);
+                    }
+                    Console.WriteLine(Check(data, buffer));
                 }
-                Console.WriteLine(Check(data, buffer));
-            }
-            else
-            {
-                Console.WriteLine(1);
+                else
+                {
+                    Console.WriteLine(1);
+                }
             }
         }
 
