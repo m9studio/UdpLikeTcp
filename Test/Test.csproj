@@ -1,16 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>M9Studio.UdpLikeTcp</RootNamespace>
+    <RootNamespace>M9Studio.UdpLikeTcp.Test</RootNamespace>
+    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Test\**" />
-    <EmbeddedResource Remove="Test\**" />
-    <None Remove="Test\**" />
+    <Reference Include="UdpLikeTcp">
+      <HintPath>..\bin\Debug\net8.0\UdpLikeTcp.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
