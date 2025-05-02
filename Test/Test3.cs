@@ -22,6 +22,10 @@ namespace M9Studio.UdpLikeTcp.Test
                 Console.WriteLine("Error");
             }
 
+            AppDomain.CurrentDomain.ProcessExit += (_, __) =>
+            {
+                RemoveUdpRule();
+            };
         }
         protected static void Test3Server()
         {
@@ -38,8 +42,14 @@ namespace M9Studio.UdpLikeTcp.Test
             {
                 Console.WriteLine("Error");
             }
+
+            AppDomain.CurrentDomain.ProcessExit += (_, __) =>
+            {
+                RemoveUdpRule();
+            };
         }
 
+        private const string RuleName = "UdpLikeTcpAutoRule";
         private static IPEndPoint Test3IPEndPoint(Socket socket)
         {
             Console.WriteLine("My Port: " + socket.Port);
@@ -53,6 +63,9 @@ namespace M9Studio.UdpLikeTcp.Test
             int portNumber = int.Parse(port);
 
             IPEndPoint ipEndPoint = new IPEndPoint(ipAddr, portNumber);
+
+
+            AddUdpRule(portNumber);
 
 
             return ipEndPoint;
