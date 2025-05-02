@@ -9,12 +9,15 @@ namespace M9Studio.UdpLikeTcp.Test
         protected static void Test3Client()
         {
             Socket client = new Socket();
+            Console.WriteLine("My Port: " + client.Port);
+
             client.OnPacketReceived += (ip, bytes) =>
             {
-                Console.WriteLine("Get packet");
-                Console.WriteLine(ip.ToString());
-                Console.WriteLine(BytesToHex(bytes);
+                Console.WriteLine("Get packet:");
+                //Console.WriteLine(ip.ToString());
+                Console.WriteLine(BytesToHex(bytes));
             };
+            Console.ReadLine();
         }
         protected static void Test3Server()
         {
