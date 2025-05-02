@@ -51,7 +51,7 @@ namespace M9Studio.UdpLikeTcp.Test
             }
             Console.WriteLine("5: " + (data5 != null));
 
-            Console.WriteLine("Check:");
+            Console.WriteLine("Get & Check:");
             if (data1 != null && socket1.ReceiveFrom(ip2, out buffer))
             {
                 Console.WriteLine("1: " + Check(buffer, data1));
