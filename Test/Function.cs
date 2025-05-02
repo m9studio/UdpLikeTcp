@@ -2,7 +2,7 @@
 {
     internal partial class Program
     {
-        protected static byte[] GenerateRandomBytes(int length = 64)
+        public static byte[] GenerateRandomBytes(int length = 64)
         {
             byte[] bytes = new byte[length];
             Random random = new Random();
@@ -10,7 +10,7 @@
             return bytes;
         }
 
-        protected static bool Check(byte[] buffer1, byte[] buffer2)
+        public static bool Check(byte[] buffer1, byte[] buffer2)
         {
             if (buffer1.Length != buffer2.Length)
             {
@@ -24,6 +24,11 @@
                 }
             }
             return true;
+        }
+
+        public static string BytesToHex(byte[] bytes)
+        {
+            return BitConverter.ToString(bytes).Replace("-", "").ToLowerInvariant();
         }
     }
 }
