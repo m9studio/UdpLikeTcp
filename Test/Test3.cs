@@ -11,7 +11,7 @@ namespace M9Studio.UdpLikeTcp.Test
             Socket client = new Socket();
             IPEndPoint ipEndPoint = Test3IPEndPoint(client);
             byte[] buffer = null;
-            Console.WriteLine("Get?");
+            Console.Write("Get?");
             Console.ReadLine();
             if (client.ReceiveFrom(ipEndPoint, out buffer))
             {
@@ -21,18 +21,18 @@ namespace M9Studio.UdpLikeTcp.Test
             {
                 Console.WriteLine("Error");
             }
-
-            AppDomain.CurrentDomain.ProcessExit += (_, __) =>
+            
+            /*AppDomain.CurrentDomain.ProcessExit += (_, __) =>
             {
                 RemoveUdpRule();
-            };
+            };*/
         }
         protected static void Test3Server()
         {
             Socket server = new Socket();
             IPEndPoint ipEndPoint = Test3IPEndPoint(server);
             byte[] buffer = GenerateRandomBytes(12000);
-            Console.WriteLine("Send?");
+            Console.Write("Send?");
             Console.ReadLine();
             if(server.SendTo(ipEndPoint, buffer))
             {
@@ -43,10 +43,10 @@ namespace M9Studio.UdpLikeTcp.Test
                 Console.WriteLine("Error");
             }
 
-            AppDomain.CurrentDomain.ProcessExit += (_, __) =>
+            /*AppDomain.CurrentDomain.ProcessExit += (_, __) =>
             {
                 RemoveUdpRule();
-            };
+            };*/
         }
 
         private const string RuleName = "UdpLikeTcpAutoRule";
@@ -54,9 +54,9 @@ namespace M9Studio.UdpLikeTcp.Test
         {
             Console.WriteLine("My Port: " + socket.Port);
 
-            Console.WriteLine("IP: ");
+            Console.Write("IP: ");
             string ip = Console.ReadLine();
-            Console.WriteLine("Port: ");
+            Console.Write("Port: ");
             string port = Console.ReadLine();
 
             IPAddress ipAddr = IPAddress.Parse(ip);
@@ -65,7 +65,7 @@ namespace M9Studio.UdpLikeTcp.Test
             IPEndPoint ipEndPoint = new IPEndPoint(ipAddr, portNumber);
 
 
-            AddUdpRule(portNumber);
+            //AddUdpRule(portNumber);
 
 
             return ipEndPoint;
