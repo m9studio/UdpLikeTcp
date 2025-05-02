@@ -4,6 +4,7 @@ using OriginalSocket = System.Net.Sockets.Socket;
 
 namespace M9Studio.UdpLikeTcp
 {
+    public delegate void PacketReceivedHandler(IPEndPoint sender, byte[] data);
     public class Socket
     {
         //Константы протокола
@@ -28,6 +29,9 @@ namespace M9Studio.UdpLikeTcp
         private readonly Dictionary<EndPoint, Queue<OutgoingPacket>> sendQueues = new();
         private readonly HashSet<EndPoint> isSending = new();
         private readonly object sendLock = new();
+
+        public event PacketReceivedHandler? OnPacketReceived;
+
 
         public Socket()
         {
@@ -99,6 +103,7 @@ namespace M9Studio.UdpLikeTcp
                                 packetQueues[remote] = queue = new Queue<byte[]>();
 
                             queue.Enqueue(fullData);
+                            OnPacketReceived?.Invoke(remote as IPEndPoint, fullData);
                         }
                     }
                 }
