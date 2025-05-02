@@ -9,26 +9,18 @@ namespace M9Studio.UdpLikeTcp.Test
         protected static void Test3Client()
         {
             Socket client = new Socket();
-            IPEndPoint ipEndPoint = Test3IPEndPoint(client);
-            byte[] buffer = null;
-            Console.Write("Get?");
-            Console.ReadLine();
-            if (client.ReceiveFrom(ipEndPoint, out buffer))
+            client.OnPacketReceived += (ip, bytes) =>
             {
-                Console.WriteLine(BytesToHex(buffer));
-            }
-            else
-            {
-                Console.WriteLine("Error");
-            }
+                Console.WriteLine("Get packet");
+                Console.WriteLine(ip.ToString());
+                Console.WriteLine(BytesToHex(bytes);
+            };
         }
         protected static void Test3Server()
         {
             Socket server = new Socket();
             IPEndPoint ipEndPoint = Test3IPEndPoint(server);
-            byte[] buffer = GenerateRandomBytes(12000);
-            Console.Write("Send?");
-            Console.ReadLine();
+            byte[] buffer = GenerateRandomBytes(64);
             if(server.SendTo(ipEndPoint, buffer))
             {
                 Console.WriteLine(BytesToHex(buffer));
