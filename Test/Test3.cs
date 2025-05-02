@@ -11,8 +11,16 @@ namespace M9Studio.UdpLikeTcp.Test
             Socket client = new Socket();
             IPEndPoint ipEndPoint = Test3IPEndPoint(client);
             byte[] buffer = null;
-            while (!client.ReceiveFrom(ipEndPoint, out buffer)) ;
-            Console.WriteLine(BytesToHex(buffer));
+            Console.WriteLine("Get?");
+            Console.ReadLine();
+            if (client.ReceiveFrom(ipEndPoint, out buffer))
+            {
+                Console.WriteLine(BytesToHex(buffer));
+            }
+            else
+            {
+                Console.WriteLine("Error");
+            }
 
         }
         protected static void Test3Server()
@@ -20,8 +28,16 @@ namespace M9Studio.UdpLikeTcp.Test
             Socket server = new Socket();
             IPEndPoint ipEndPoint = Test3IPEndPoint(server);
             byte[] buffer = GenerateRandomBytes(12000);
-            Console.WriteLine(BytesToHex(buffer));
-            server.SendTo(ipEndPoint, buffer);
+            Console.WriteLine("Send?");
+            Console.ReadLine();
+            if(server.SendTo(ipEndPoint, buffer))
+            {
+                Console.WriteLine(BytesToHex(buffer));
+            }
+            else
+            {
+                Console.WriteLine("Error");
+            }
         }
 
         private static IPEndPoint Test3IPEndPoint(Socket socket)
