@@ -19,8 +19,13 @@
     <PackageProjectUrl>https://github.com/m9studio/UdpLikeTcp</PackageProjectUrl>
     <RepositoryUrl>https://github.com/m9studio/UdpLikeTcp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-	<PackageReleaseNotes>Initial release: reliable UDP abstraction with fragmentation, reassembly and ACK-based delivery.</PackageReleaseNotes>
+    <PackageReleaseNotes>Initial release: reliable UDP abstraction with fragmentation, reassembly and ACK-based delivery.</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="Test\**" />
