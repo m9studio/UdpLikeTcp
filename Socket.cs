@@ -110,10 +110,10 @@ namespace M9Studio.UdpLikeTcp
             });
         }
 
-        public bool SendTo(EndPoint remoteEP, byte[] data)
+        public bool SendTo(EndPoint remoteEP, byte[] buffer)
         {
             var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var packet = new OutgoingPacket { Data = data, Completion = tcs };
+            var packet = new OutgoingPacket { Data = buffer, Completion = tcs };
 
             lock (sendLock)
             {
@@ -156,10 +156,10 @@ namespace M9Studio.UdpLikeTcp
             }
         }
 
-        private bool SendReliable(EndPoint remoteEP, byte[] data)
+        private bool SendReliable(EndPoint remoteEP, byte[] buffer)
         {
             int packetId = Interlocked.Increment(ref packetCounter);
-            int totalSize = data.Length;
+            int totalSize = buffer.Length;
             int totalFragments = (int)Math.Ceiling(totalSize / (double)MaxFragmentSize);
 
             for (ushort fragmentNumber = 0; fragmentNumber < totalFragments; fragmentNumber++)
@@ -172,7 +172,7 @@ namespace M9Studio.UdpLikeTcp
                 BitConverter.GetBytes(totalSize).CopyTo(packet, 4);
                 BitConverter.GetBytes(fragmentNumber).CopyTo(packet, 8);
                 BitConverter.GetBytes((ushort)chunkSize).CopyTo(packet, 10);
-                Array.Copy(data, offset, packet, HeaderSize, chunkSize);
+                Array.Copy(buffer, offset, packet, HeaderSize, chunkSize);
 
                 int attempts = 0;
                 while (attempts < MaxSendAttempts)
@@ -199,19 +199,48 @@ namespace M9Studio.UdpLikeTcp
             return true;
         }
 
-        public bool ReceiveFrom(EndPoint remoteEP, out byte[] data)
+
+        public bool ReceiveFrom(EndPoint remoteEP, out byte[] buffer)
         {
             lock (syncLock)
             {
                 if (packetQueues.TryGetValue(remoteEP, out var queue) && queue.Count > 0)
                 {
-                    data = queue.Dequeue();
+                    buffer = queue.Dequeue();
                     return true;
                 }
             }
 
-            data = null;
+            buffer = null;
             return false;
+        }
+
+        public byte[] ReceiveFrom(EndPoint remoteEP)
+        {
+            byte[]? buffer = null;
+            if(ReceiveFrom(remoteEP, out buffer))
+            {
+                return buffer;
+            }
+
+            using var waitHandle = new AutoResetEvent(false);
+
+            PacketReceivedHandler handler = null!;
+            handler = (sender, data) =>
+            {
+                if (sender.Equals(remoteEP))
+                {
+                    buffer = data;
+                    OnPacketReceived -= handler;
+                    waitHandle.Set();
+                }
+            };
+
+            OnPacketReceived += handler;
+
+            waitHandle.WaitOne(); //Блокируем, пока не получим
+
+            return buffer!;
         }
 
         private bool IsAckReceived(EndPoint from, int packetId, ushort fragmentNumber)
