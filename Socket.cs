@@ -4,7 +4,6 @@ using OriginalSocket = System.Net.Sockets.Socket;
 
 namespace M9Studio.UdpLikeTcp
 {
-    public delegate void PacketReceivedHandler(IPEndPoint sender, byte[] data);
     public class Socket
     {
         //Константы протокола
@@ -30,7 +29,8 @@ namespace M9Studio.UdpLikeTcp
         private readonly HashSet<EndPoint> isSending = new();
         private readonly object sendLock = new();
 
-        public event PacketReceivedHandler? OnPacketReceived;
+        public event Action<IPEndPoint>? OnConnected;
+        public event Action<IPEndPoint>? OnReceived;
 
 
         public Socket()
@@ -100,10 +100,12 @@ namespace M9Studio.UdpLikeTcp
                             receiving.Remove(remote);
 
                             if (!packetQueues.TryGetValue(remote, out var queue))
+                            {
                                 packetQueues[remote] = queue = new Queue<byte[]>();
-
+                                OnConnected?.Invoke(remote as IPEndPoint);
+                            }
                             queue.Enqueue(fullData);
-                            OnPacketReceived?.Invoke(remote as IPEndPoint, fullData);
+                            OnReceived?.Invoke(remote as IPEndPoint);
                         }
                     }
                 }
@@ -225,18 +227,20 @@ namespace M9Studio.UdpLikeTcp
 
             using var waitHandle = new AutoResetEvent(false);
 
-            PacketReceivedHandler handler = null!;
-            handler = (sender, data) =>
+            Action<IPEndPoint> handler = null!;
+            handler = (sender) =>
             {
                 if (sender.Equals(remoteEP))
                 {
-                    buffer = data;
-                    OnPacketReceived -= handler;
-                    waitHandle.Set();
+                    if (ReceiveFrom(remoteEP, out buffer))
+                    {
+                        OnReceived -= handler;
+                        waitHandle.Set();
+                    }
                 }
             };
 
-            OnPacketReceived += handler;
+            OnReceived += handler;
 
             waitHandle.WaitOne(); //Блокируем, пока не получим
 
