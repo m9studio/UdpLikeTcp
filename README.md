@@ -41,9 +41,15 @@ Console.WriteLine("Received: " + Encoding.UTF8.GetString(received));
 ### Using the event system
 
 ```csharp
-socket.OnPacketReceived += (sender, data) =>
+socket.DataReceived += (sender) =>
 {
-    Console.WriteLine($"Received {data.Length} bytes from {sender}");
+    byte[] buffer = socket.ReceiveFrom(sender);
+    Console.WriteLine($"Received {buffer.Length} bytes from {sender}");
+};
+
+socket.Connected += (sender) =>
+{
+    Console.WriteLine($"{sender} is connected");
 };
 ```
 

@@ -9,7 +9,7 @@
     <!-- NuGet package metadata -->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>M9Studio.UdpLikeTcp</PackageId>
-    <Version>8.0.0</Version>
+    <Version>8.0.1</Version>
     <Authors>mina987</Authors>
     <Company>M9Studio</Company>
     <Copyright>© 2025 M9Studio</Copyright>
