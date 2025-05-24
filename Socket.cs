@@ -32,11 +32,11 @@ namespace M9Studio.UdpLikeTcp
         public event Action<IPEndPoint>? OnConnected;
         public event Action<IPEndPoint>? OnReceived;
 
-
-        public Socket()
+        public Socket() : this(new IPEndPoint(IPAddress.Any, 0)) { }
+        public Socket(IPEndPoint address)
         {
             socket = new OriginalSocket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            socket.Bind(new IPEndPoint(IPAddress.Any, 0));
+            socket.Bind(address);
             Task.Run(CleanupRoutine);
             Task.Run(() =>
             {
