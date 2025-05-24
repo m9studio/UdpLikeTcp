@@ -11,11 +11,12 @@ namespace M9Studio.UdpLikeTcp.Test
             Socket client = new Socket();
             Console.WriteLine("My Port: " + client.Port);
 
-            client.OnPacketReceived += (ip, bytes) =>
+            client.OnReceived += (ip) =>
             {
-                Console.WriteLine("Get packet:");
-                //Console.WriteLine(ip.ToString());
-                Console.WriteLine(BytesToHex(bytes));
+                while (true)
+                {
+                    Console.WriteLine("Get packet: " + ip.ToString() + " " + BytesToHex(client.ReceiveFrom(ip)));
+                }
             };
             Console.ReadLine();
         }
